@@ -27,7 +27,7 @@ if ($row['count'] == 0) {
 <body>
     <h1>TP1-secureForm</h1>
     
-    <img src="https://via.placeholder.com/150" alt="Logo">
+    <img src="logo_paris8_noir.png" alt="Logo" width="200" height="100">
     
     <form method="POST" action="login.php" id="loginForm">
         <p>

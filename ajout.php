@@ -30,6 +30,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <body>
     <h1>Créer un nouveau compte</h1>
     
+    <img src="logo_paris8_noir.png" alt="Logo" width="200" height="100">
+
     <form method="POST">
         <p>
             <label>Identifiant :</label><br>
