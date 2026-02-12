@@ -1,5 +1,6 @@
 <?php
 session_start();
+require_once 'functions.php';
 
 // On créer la base de données
 $db = new SQLite3('users.db');
@@ -16,9 +17,12 @@ if ($row['count'] == 0) {
     $mdp_hash = password_hash('Admin@12345678', PASSWORD_DEFAULT);
     $db->exec("INSERT INTO users (identifiant, mdp) VALUES ('admin', '$mdp_hash')");
 }
+
+// Générer le token CSRF
+$csrf_token = genererTokenCSRF();
 ?>
 
-<!-- On créer un formualire simple-->
+<!-- On créer un formulaire simple-->
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -31,6 +35,9 @@ if ($row['count'] == 0) {
     <img src="logo_paris8_noir.png" alt="Logo" width="200" height="100">
     
     <form method="POST" action="login.php" id="loginForm">
+        <!-- Token CSRF caché -->
+        <input type="hidden" name="csrf_token" value="<?php echo $csrf_token; ?>">
+        
         <p>
             <label>Identifiant :</label><br>
             <input type="text" name="identifiant" id="identifiant" required>
@@ -43,7 +50,7 @@ if ($row['count'] == 0) {
         
         <!-- Affichage du message ok ou error (login.php) -->
         <?php if (isset($_SESSION['message'])): ?>
-            <p><strong><?php echo $_SESSION['message']; ?></strong></p>
+            <p><strong><?php echo htmlspecialchars($_SESSION['message']); ?></strong></p>
             <?php 
             unset($_SESSION['message']);
             ?>

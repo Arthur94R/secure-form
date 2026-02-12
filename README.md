@@ -6,12 +6,13 @@ Projet simple de connexion avec PHP et SQLite.
 - 1 formulaire de connexion
     - 1 logo
     - 1 champ identifiant
-    - 1 champ mot de passe
+    - 1 champ mot de passe (exigences de sécurité lors de sa création)
     - 3 boutons
         - Reset : remise à zéro des champs
         - Ok : Message ok ou error
         - Ajout compte : possibilité d'ajouter un identifiant en plus
 - Base de données SQLite
+- Protection token CSRF
 
 ## Installation
 1. Cloner le repository
@@ -19,5 +20,5 @@ Projet simple de connexion avec PHP et SQLite.
 3. Ouvrir : `http://localhost:8000`
 
 ## Compte par défaut
-- Identifiant : `toto`
-- Mot de passe : `toto123`
+- Identifiant : `admin`
+- Mot de passe : `Admin@12345678`

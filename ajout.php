@@ -1,60 +1,45 @@
 <?php
 session_start();
-
-function validerMotDePasse($mdp) {
-    $erreurs = [];
-    
-    if (strlen($mdp) < 12) {
-        $erreurs[] = "Le mot de passe doit contenir au moins 12 caractères";
-    }
-    
-    if (!preg_match('/[A-Z]/', $mdp)) {
-        $erreurs[] = "Le mot de passe doit contenir au moins une majuscule";
-    }
-    
-    if (!preg_match('/[a-z]/', $mdp)) {
-        $erreurs[] = "Le mot de passe doit contenir au moins une minuscule";
-    }
-    
-    if (!preg_match('/[0-9]/', $mdp)) {
-        $erreurs[] = "Le mot de passe doit contenir au moins un chiffre";
-    }
-    
-    if (!preg_match('/[!@#$%^&*(),.?":{}|<>_\-+=\[\]]/', $mdp)) {
-        $erreurs[] = "Le mot de passe doit contenir au moins un caractère spécial (!@#$%^&*...)";
-    }
-    
-    return $erreurs;
-}
+require_once 'functions.php';
 
 $erreurs = [];
 
+// Générer le token CSRF
+$csrf_token = genererTokenCSRF();
+
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $identifiant = $_POST['identifiant'] ?? '';
-    $mdp = $_POST['mdp'] ?? '';
-    $mdpConfirm = $_POST['mdpConfirm'] ?? '';
+    // Vérifier le token CSRF
+    $csrf_token_post = $_POST['csrf_token'] ?? '';
     
-    if ($mdp !== $mdpConfirm) {
-        $erreurs[] = "Les mots de passe ne correspondent pas";
-    }
-
-    $erreurs = array_merge($erreurs, validerMotDePasse($mdp));
-
-    if (empty($erreurs)) {
-        $mdpHash = password_hash($mdp, PASSWORD_DEFAULT);
+    if (!verifierTokenCSRF($csrf_token_post)) {
+        $erreurs[] = "Requête invalide (protection CSRF)";
+    } else {
+        $identifiant = $_POST['identifiant'] ?? '';
+        $mdp = $_POST['mdp'] ?? '';
+        $mdpConfirm = $_POST['mdpConfirm'] ?? '';
         
-        $db = new SQLite3('users.db');
-        $stmt = $db->prepare('INSERT INTO users (identifiant, mdp) VALUES (:identifiant, :mdp)');
-        $stmt->bindValue(':identifiant', $identifiant, SQLITE3_TEXT);
-        $stmt->bindValue(':mdp', $mdpHash, SQLITE3_TEXT);
-        
-        try {
-            $stmt->execute();
-            $_SESSION['message'] = "OK - Compte créé avec succès !";
-            header('Location: index.php');
-            exit();
-        } catch (Exception $e) {
-            $erreurs[] = "Cet identifiant existe déjà";
+        if ($mdp !== $mdpConfirm) {
+            $erreurs[] = "Les mots de passe ne correspondent pas";
+        }
+
+        $erreurs = array_merge($erreurs, validerMotDePasse($mdp));
+
+        if (empty($erreurs)) {
+            $mdpHash = password_hash($mdp, PASSWORD_DEFAULT);
+            
+            $db = new SQLite3('users.db');
+            $stmt = $db->prepare('INSERT INTO users (identifiant, mdp) VALUES (:identifiant, :mdp)');
+            $stmt->bindValue(':identifiant', $identifiant, SQLITE3_TEXT);
+            $stmt->bindValue(':mdp', $mdpHash, SQLITE3_TEXT);
+            
+            try {
+                $stmt->execute();
+                $_SESSION['message'] = "OK - Compte créé avec succès !";
+                header('Location: index.php');
+                exit();
+            } catch (Exception $e) {
+                $erreurs[] = "Cet identifiant existe déjà";
+            }
         }
     }
 }
@@ -79,19 +64,22 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     </ul>
     
     <form method="POST">
+        <!-- Token CSRF caché -->
+        <input type="hidden" name="csrf_token" value="<?php echo $csrf_token; ?>">
+        
         <p>
             <label>Identifiant :</label><br>
-            <input type="text" name="identifiant" required>
+            <input type="text" name="identifiant" value="<?php echo htmlspecialchars($_POST['identifiant'] ?? ''); ?>" required>
         </p>
         
         <p>
             <label>Mot de passe :</label><br>
-            <input type="password" name="mdp" id="mdp" required>
+            <input type="password" name="mdp" required>
         </p>
         
         <p>
             <label>Confirmer le mot de passe :</label><br>
-            <input type="password" id="mdp_confirm" required>
+            <input type="password" name="mdpConfirm" required>
         </p>
         
         <?php if (!empty($erreurs)): ?>
@@ -107,8 +95,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         
         <p>
             <a href="index.php"><button type="button">Retour</button></a>
-            <button type="submit" onclick="return verifierMdp()">Créer</button>
+            <button type="submit">Créer</button>
         </p>
     </form>
-    </body>
+</body>
 </html>

@@ -1,7 +1,17 @@
 <?php
 session_start();
+require_once 'functions.php';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    // Vérifier le token CSRF
+    $csrf_token = $_POST['csrf_token'] ?? '';
+    
+    if (!verifierTokenCSRF($csrf_token)) {
+        $_SESSION['message'] = "ERROR - Requête invalide (protection CSRF)";
+        header('Location: index.php');
+        exit();
+    }
+    
     $identifiant = $_POST['identifiant'] ?? '';
     $mdp = $_POST['mdp'] ?? '';
     
