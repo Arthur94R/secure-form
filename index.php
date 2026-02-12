@@ -22,45 +22,44 @@ if ($row['count'] == 0) {
 $csrf_token = genererTokenCSRF();
 ?>
 
-<!-- On créer un formulaire simple-->
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Connexion</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1>TP1-secureForm</h1>
-    
-    <img src="logo_paris8_noir.png" alt="Logo" width="200" height="100">
-    
-    <form method="POST" action="login.php" id="loginForm">
-        <!-- Token CSRF caché -->
-        <input type="hidden" name="csrf_token" value="<?php echo $csrf_token; ?>">
+    <div class="container">
+        <h1>TP1 - Secure Form</h1>
         
-        <p>
-            <label>Identifiant :</label><br>
+        <img src="logo_paris8_noir.png" alt="Logo" width="200" height="100" class="logo">
+        
+        <form method="POST" action="login.php" id="loginForm">
+            <input type="hidden" name="csrf_token" value="<?php echo $csrf_token; ?>">
+            
+            <label>Identifiant :</label>
             <input type="text" name="identifiant" id="identifiant" required>
-        </p>
-        
-        <p>
-            <label>Mot de passe :</label><br>
+            
+            <label>Mot de passe :</label>
             <input type="password" name="mdp" id="mdp" required>
-        </p>
-        
-        <!-- Affichage du message ok ou error (login.php) -->
-        <?php if (isset($_SESSION['message'])): ?>
-            <p><strong><?php echo htmlspecialchars($_SESSION['message']); ?></strong></p>
-            <?php 
-            unset($_SESSION['message']);
-            ?>
-        <?php endif; ?>
-        
-        <p>
-            <button type="button" onclick="document.getElementById('loginForm').reset()">Reset</button>
-            <button type="submit">OK</button>
-            <a href="ajout.php"><button type="button">Ajout compte</button></a>
-        </p>
-    </form>
+            
+            <?php if (isset($_SESSION['message'])): ?>
+                <div class="message <?php echo (strpos($_SESSION['message'], 'OK') !== false) ? 'message-success' : 'message-error'; ?>">
+                    <?php echo htmlspecialchars($_SESSION['message']); ?>
+                </div>
+                <?php 
+                unset($_SESSION['message']);
+                ?>
+            <?php endif; ?>
+            
+            <div class="buttons">
+                <button type="button" onclick="document.getElementById('loginForm').reset()">Reset</button>
+                <button type="submit">OK</button>
+                <a href="ajout.php"><button type="button">Ajout compte</button></a>
+            </div>
+        </form>
+    </div>
 </body>
 </html>
