@@ -13,7 +13,8 @@ $db->exec('CREATE TABLE IF NOT EXISTS users (
 $result = $db->query('SELECT COUNT(*) as count FROM users');
 $row = $result->fetchArray();
 if ($row['count'] == 0) {
-    $db->exec("INSERT INTO users (identifiant, mdp) VALUES ('toto', 'toto123')");
+    $mdp_hash = password_hash('Admin@12345678', PASSWORD_DEFAULT);
+    $db->exec("INSERT INTO users (identifiant, mdp) VALUES ('admin', '$mdp_hash')");
 }
 ?>
 

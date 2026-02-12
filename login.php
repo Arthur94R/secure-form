@@ -6,14 +6,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $mdp = $_POST['mdp'] ?? '';
     
     $db = new SQLite3('users.db');
-    $stmt = $db->prepare('SELECT * FROM users WHERE identifiant = :identifiant AND mdp = :mdp');
+    $stmt = $db->prepare('SELECT * FROM users WHERE identifiant = :identifiant');
     $stmt->bindValue(':identifiant', $identifiant, SQLITE3_TEXT);
-    $stmt->bindValue(':mdp', $mdp, SQLITE3_TEXT);
     
     $result = $stmt->execute();
     $user = $result->fetchArray();
     
-    if ($user) {
+    if ($user && password_verify($mdp, $user['mdp'])) {
         $_SESSION['message'] = "OK - Connexion réussie !";
     } else {
         $_SESSION['message'] = "ERROR - Identifiant ou mot de passe incorrect";
