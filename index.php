@@ -1,22 +1,10 @@
 <?php
 session_start();
+require_once 'config.php';
 require_once 'functions.php';
 
-// On créer la base de données
-$db = new SQLite3('users.db');
-$db->exec('CREATE TABLE IF NOT EXISTS users (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    identifiant TEXT UNIQUE NOT NULL,
-    mdp TEXT NOT NULL
-)');
-
-// On créer un compte par défaut
-$result = $db->query('SELECT COUNT(*) as count FROM users');
-$row = $result->fetchArray();
-if ($row['count'] == 0) {
-    $mdp_hash = password_hash('Admin@12345678', PASSWORD_DEFAULT);
-    $db->exec("INSERT INTO users (identifiant, mdp) VALUES ('admin', '$mdp_hash')");
-}
+// Initialiser la base de données
+initDB();
 
 // Générer le token CSRF
 $csrf_token = genererTokenCSRF();

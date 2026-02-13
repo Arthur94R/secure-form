@@ -1,5 +1,6 @@
 <?php
 session_start();
+require_once 'config.php';
 require_once 'functions.php';
 
 $erreurs = [];
@@ -27,18 +28,21 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         if (empty($erreurs)) {
             $mdpHash = password_hash($mdp, PASSWORD_DEFAULT);
             
-            $db = new SQLite3('users.db');
-            $stmt = $db->prepare('INSERT INTO users (identifiant, mdp) VALUES (:identifiant, :mdp)');
-            $stmt->bindValue(':identifiant', $identifiant, SQLITE3_TEXT);
-            $stmt->bindValue(':mdp', $mdpHash, SQLITE3_TEXT);
-            
             try {
-                $stmt->execute();
+                $db = getDB();
+                $stmt = $db->prepare('INSERT INTO users (identifiant, mdp) VALUES (?, ?)');
+                $stmt->execute([$identifiant, $mdpHash]);
+                
                 $_SESSION['message'] = "OK - Compte créé avec succès !";
                 header('Location: index.php');
                 exit();
-            } catch (Exception $e) {
-                $erreurs[] = "Cet identifiant existe déjà";
+            } catch (PDOException $e) {
+                // Erreur de doublon (identifiant déjà existant)
+                if ($e->getCode() == 23000) {
+                    $erreurs[] = "Cet identifiant existe déjà";
+                } else {
+                    $erreurs[] = "Erreur lors de la création du compte";
+                }
             }
         }
     }
